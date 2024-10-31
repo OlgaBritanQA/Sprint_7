@@ -22,6 +22,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 public class CreateOrderTest {
 
     private final List<String> colorValue;
+
     public CreateOrderTest(List<String> colorValue) {
         this.colorValue = colorValue;
     }
@@ -45,7 +46,7 @@ public class CreateOrderTest {
     @DisplayName("Test order creation")
     public void testOrderCreation() {
         OrdersClient ordersClient = new OrdersClient();
-        ValidatableResponse emptyPasswordField = ordersClient.getOrdersResponse(
+        ValidatableResponse emptyPasswordField = ordersClient.createOrderResponse(
                 new Order("Гарри", "Поттер", "Тисовая Улица,4", 7, "+7 800 355 35 35", 3, "2024-10-31", "Пришлите Нимбус 2000", colorValue));
         emptyPasswordField
                 .statusCode(201);

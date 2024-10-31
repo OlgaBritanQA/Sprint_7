@@ -7,6 +7,7 @@ import io.restassured.response.ValidatableResponse;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.example.data.Courier;
 import org.example.webclients.CouriersClient;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -19,6 +20,7 @@ public class CreateCourierTest {
     private static String login;
     private static String password;
     private static String firstName;
+    private static Courier courier;
 
     @Before
     public void setUp() {
@@ -27,15 +29,25 @@ public class CreateCourierTest {
         login = RandomStringUtils.randomAlphabetic(10);
         password = RandomStringUtils.randomAlphabetic(8);
         firstName = RandomStringUtils.randomAlphabetic(20);
+        courier = new Courier(login, password, firstName);
+    }
+
+    @After
+    public void cleanDb() {
+        ValidatableResponse dataCourier = couriersClient.loginCourierResponse(
+                new Courier(courier.getLogin(), courier.getPassword()));
+        Integer courierId = dataCourier.extract().path("id");
+        if (courierId != null) {
+            couriersClient.deleteCourierResponse(courierId);
+        }
     }
 
     @Test
     @DisplayName("Test Create Courier")
     @Description("Проверяем, что курьер создан, возвращается статус 201 и сообщение ОК")
     public void testCreateCourierSuccess() {
-        ValidatableResponse crateRandomCourier = couriersClient.createCourierResponse(
-                new Courier(login, password, firstName));
-        crateRandomCourier
+        ValidatableResponse createRandomCourier = couriersClient.createCourierResponse(courier);
+        createRandomCourier
                 .statusCode(201)
                 .assertThat()
                 .body("ok", equalTo(true));
@@ -45,7 +57,6 @@ public class CreateCourierTest {
     @DisplayName("Test Create Courier With Duplicate Login")
     @Description("При запросе с повторяющимся логином жидаемый статус ответа: 409")
     public void testCreateCourierWithDuplicateLogin() {
-        Courier courier = new Courier(login, password, firstName);
         couriersClient.createCourierResponse(courier).statusCode(201);
         ValidatableResponse duplicateLogin =
                 couriersClient.createCourierResponse(courier);

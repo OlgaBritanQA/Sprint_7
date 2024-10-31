@@ -8,6 +8,7 @@ public enum Constants {
     COURIER_API("/api/v1/courier"),
     LOGIN_API("/api/v1/courier/login"),
     ORDER_API("/api/v1/orders"),
+    DELETE_API("/api/v1/courier/{courierId}"),
 
     EXISTING_LOGIN("OlgaLogin"),
     EXISTING_PASSWORD("OlgaPassword"),

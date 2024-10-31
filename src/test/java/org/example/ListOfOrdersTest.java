@@ -3,14 +3,13 @@ package org.example;
 import io.qameta.allure.Description;
 import io.qameta.allure.junit4.DisplayName;
 import io.restassured.RestAssured;
+import org.example.webclients.OrdersClient;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
 
-import static io.restassured.RestAssured.given;
 import static org.example.util.Constants.BASE_URL;
-import static org.example.util.Constants.ORDER_API;
 import static org.hamcrest.Matchers.*;
 
 public class ListOfOrdersTest {
@@ -24,11 +23,8 @@ public class ListOfOrdersTest {
     @DisplayName("Check Receiving the Order List")
     @Description("Проверяем, что можем получить заказы из списка заказов")
     public void testReceivingOrderList() {
-        given()
-                .header("Content-type", "application/json")
-                .when()
-                .get(ORDER_API.getConstant())
-                .then()
+        OrdersClient ordersClient = new OrdersClient();
+        ordersClient.getOrdersResponse()
                 .log().all()
                 .assertThat()
                 .statusCode(200)

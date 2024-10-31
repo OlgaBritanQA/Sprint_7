@@ -8,6 +8,7 @@ import io.restassured.response.ValidatableResponse;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.example.data.Courier;
 import org.example.webclients.CouriersClient;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -21,6 +22,8 @@ public class LoginCourierTest {
     private static CouriersClient couriersClient;
     private static String login;
     private static String password;
+    private static String firstName;
+    private static Courier courier;
 
     @Before
     public void setUp() {
@@ -28,6 +31,19 @@ public class LoginCourierTest {
         couriersClient = new CouriersClient();
         login = RandomStringUtils.randomAlphabetic(10);
         password = RandomStringUtils.randomAlphabetic(8);
+        firstName = RandomStringUtils.randomAlphabetic(8);
+        courier = new Courier(login, password, firstName);
+        couriersClient.createCourierResponse(courier);
+    }
+
+    @After
+    public void cleanDb() {
+        ValidatableResponse dataCourier = couriersClient.loginCourierResponse(
+                new Courier(login, password));
+        Integer courierId = dataCourier.extract().path("id");
+        if (courierId != null) {
+            couriersClient.deleteCourierResponse(courierId);
+        }
     }
 
     @Test
@@ -36,7 +52,7 @@ public class LoginCourierTest {
 
     public void testSuccessfulLogin() {
         ValidatableResponse dataCourier = couriersClient.loginCourierResponse(
-                new Courier(EXISTING_LOGIN.getConstant(), EXISTING_PASSWORD.getConstant()));
+                new Courier(login, password));
         dataCourier
                 .statusCode(200);
         assertThat("id", notNullValue());
@@ -47,7 +63,7 @@ public class LoginCourierTest {
     @Description("Отправка запроса с пустым логином вернет ошибку и статус-код 400")
     public void testRequestWithoutLogin() {
         ValidatableResponse dataCourierWithoutLogin = couriersClient.loginCourierResponse(
-                new Courier(null, EXISTING_PASSWORD.getConstant())
+                new Courier(null, password)
         );
         dataCourierWithoutLogin
                 .statusCode(400)
@@ -60,7 +76,7 @@ public class LoginCourierTest {
     @Description("Отправка запроса с пустым паролем вернет ошибку и статус-код 400")
     public void testRequestWithoutPassword() {
         ValidatableResponse dataCourierWithoutLogin = couriersClient.loginCourierResponse(
-                new Courier(EXISTING_LOGIN.getConstant(), ""));
+                new Courier(login, ""));
         dataCourierWithoutLogin
                 .statusCode(400)
                 .assertThat()
@@ -72,7 +88,7 @@ public class LoginCourierTest {
     @Description("Отправка запроса с несуществующими логином и паролем вернет ошибку и статус-код 404")
     public void testWithNotExistingCredentials() {
         ValidatableResponse notExistingCredentials = couriersClient.loginCourierResponse(
-                new Courier(login, password));
+                new Courier(RandomStringUtils.randomAlphabetic(10), RandomStringUtils.randomAlphabetic(8)));
         notExistingCredentials
                 .statusCode(404)
                 .assertThat()
